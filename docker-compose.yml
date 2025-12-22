@@ -10,7 +10,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./allowed-channels.txt:/allowed-channels.txt
+      - ./allowed_channels.txt:/allowed_channels.txt
       - ./systemprompt.txt:/systemprompt.txt
 
 
