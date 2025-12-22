@@ -14,8 +14,7 @@ OLLAMA_SERVER=http://ollama:11434
 DISCORD_TOKEN=Your Bot Token.
 OLLAMA_MODEL_NAME=gemma3:4b 
 OLLAMA_HOST="0.0.0.0"
-OLLAMA_KEEP_ALIVE="-1
-"
+OLLAMA_KEEP_ALIVE="-1"
 ```
 
 The only thing you should change is DISCORD_TOKEN or the model. 
