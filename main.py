@@ -50,15 +50,20 @@ async def GenerateText(prompt):
 
         prompt = json.dumps(
             {
-            "systemprompt":SYSTEMPROMPT.read_text(),
-            "prompt":prompt
+            "prompt":prompt,
         }
         )
 
 
         async with client.post(
             OLLAMA_SERVER + "/api/generate",
-            json={"model": OLLAMA_MODEL_NAME, "prompt": prompt}
+            json={
+                "model": OLLAMA_MODEL_NAME,
+                "prompt": prompt,
+                "system":SYSTEMPROMPT.read_text(),
+
+                 "keep_alive":"24h"
+                 }
         ) as resp:
             output = []
             async for line in resp.content:
@@ -71,22 +76,6 @@ async def GenerateText(prompt):
                         print()
                         return "".join(output)
 
-async def main():
-    if not await IsModel(OLLAMA_MODEL_NAME):
-        print(f"Uh oh. {OLLAMA_MODEL_NAME} doesn't exist. Pulling now. This may take some time...")
-        await PullModel(OLLAMA_MODEL_NAME)
-
-
-
-    try:
-        while True:
-            prompt = input("> ").strip()
-            if not prompt:
-                continue
-            out = await GenerateText(prompt)
-
-    except KeyboardInterrupt:
-        print("\nExiting gracefully.")
 
 
 user_histories: dict[int, collections.deque[str]] = {}
@@ -96,6 +85,8 @@ async def on_message(message: discord.Message):
     if message.author == bot.user:
         return
     
+
+
     try:
         allowed_lines = {l.strip() for l in ALLOWEDCHANNELS.read_text().splitlines() if l.strip()}
     except Exception:
@@ -106,7 +97,6 @@ async def on_message(message: discord.Message):
         
 
     print(f"[{message.author} / {message.author.display_name}]: {message.content}")
-
     # get or create a deque for this user
     history = user_histories.setdefault(message.author.id, collections.deque(maxlen=5))
     history.append(message.content)
@@ -119,7 +109,12 @@ async def on_message(message: discord.Message):
         f"[New Prompt]\n{message.content}\n\n"
     )
 
-    reply_text = await GenerateText(full_prompt)
+    async with message.channel.typing():
+        print("Beginning generation...")
+        reply_text = await GenerateText(full_prompt)
+
+    print(f"User Says: {message.content}")
+    print(f"AI Says: {reply_text}")
     await message.reply(reply_text)
 
 
@@ -129,7 +124,12 @@ async def on_ready():
     print(f"Logged in as {bot.user}")
 
 
-bot.run(token=DISCORD_TOKEN)
+async def main():
+    if not await IsModel(OLLAMA_MODEL_NAME):
+        print(f"Uh oh. {OLLAMA_MODEL_NAME} doesn't exist. Pulling now. This may take some time...")
+        await PullModel(OLLAMA_MODEL_NAME)
+
+    await bot.start(token=DISCORD_TOKEN) # start not run cuz we run this in an existing event loop
 
 
-
+asyncio.run(main())
