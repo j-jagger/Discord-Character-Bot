@@ -10,7 +10,7 @@
 
 'Discord Character Bot' because it was created to imitate a character as a joke.
 
-A simple Ollama to Discord translator.
+In practice, this is a Discord <-> Ollama connector with surprising functionality.
 
 allowed-channels.txt denotes channels wherein the bot can talk. A newline seperates the channels.
 systemprompt.txt is the system prompt. It's currently set to James McGill from Better Call Saul. [PROPERTY OF AMC]
